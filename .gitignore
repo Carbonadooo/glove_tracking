@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments and package caches
+.venv/
+venv/
+env/
+.conda/
+.cache/
+.huggingface/
+.uv-cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets and machine-specific download manifests
+Hot3DAria_download_urls.json
+*download_urls*.json
+.env
+.env.*
+
+# Licensed/external assets. Keep only the repository instructions.
+data/*
+!data/README.md
+mano_v1_2/*
+!mano_v1_2/README.md
+model/*
+!model/README.md
+
+# Generated experiments and training checkpoints
+outputs/*
+!outputs/README.md
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.log
+
+# Generated media, archives, and local Blender projects
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.mp4
+*.avi
+*.mov
+*.blend
+*.blend1
+
+# Root-level generated rig/debug assets
+/glove_hot3d_rig.npz
+/glove_hot3d_aligned.obj
+/average_mano_right.obj
+/average_mano_right_landmarks.json
+/canonical_mano_right.obj

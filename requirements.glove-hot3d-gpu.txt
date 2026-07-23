@@ -1,0 +1,6 @@
+# Official PyTorch CUDA 12.8 wheels. Valid on Windows and Linux hosts with a
+# sufficiently recent NVIDIA driver; no separate CUDA Toolkit is required.
+--index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0
+torchvision==0.26.0
+torchaudio==2.11.0

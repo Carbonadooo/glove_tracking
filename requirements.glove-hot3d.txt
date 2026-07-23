@@ -1,0 +1,17 @@
+accelerate==1.14.0
+diffusers==0.39.0
+hand_tracking_toolkit @ git+https://github.com/facebookresearch/hand_tracking_toolkit.git@2bb94ccec72d512ec499eb75f36571d77e44fbd7
+huggingface_hub==1.14.0
+imageio==2.37.0
+numpy==2.2.6
+opencv-python==4.13.0.92
+Pillow==12.2.0
+PySide6==6.11.1
+requests==2.33.1
+safetensors==0.8.0
+scipy==1.15.3
+smplx==0.1.28
+tqdm==4.67.3
+transformers==5.14.1
+trimesh==4.12.2
+webdataset==1.0.2

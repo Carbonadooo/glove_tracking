@@ -1,0 +1,24 @@
+{
+  "seed": 7,
+  "output_dir": "outputs/hand_restoration/debug_samples",
+  "num_samples": 4,
+  "data": {
+    "clip_tars": ["data/train_quest3/clip-000000.tar"],
+    "mano_model_dir": "mano_v1_2/models",
+    "camera_id": "1201-2",
+    "hands": "right",
+    "output_size": 512,
+    "grayscale": true,
+    "frame_start": 15,
+    "frame_stride": 15,
+    "max_frames_per_clip": 4
+  },
+  "condition": {
+    "mode": "masked_replace",
+    "mask_dilation_px": 2,
+    "boundary_corruption_px": 6,
+    "wrist_extension_px": 0,
+    "mano_opacity": 1.0,
+    "background_fill": "gray"
+  }
+}

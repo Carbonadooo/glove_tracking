@@ -1,0 +1,7 @@
+name: glove-hot3d
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10.20
+  - pip
+  - git

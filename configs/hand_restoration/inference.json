@@ -1,0 +1,8 @@
+{
+  "seed": 7,
+  "output_dir": "outputs/hand_restoration/inference",
+  "data": {"clip_tars": ["data/train_quest3/clip-000000.tar"], "mano_model_dir": "mano_v1_2/models", "camera_id": "1201-2", "hands": "right", "output_size": 384, "grayscale": true, "frame_start": 15, "max_frames_per_clip": 1},
+  "condition": {"mode": "masked_replace", "mask_dilation_px": 1, "boundary_corruption_px": 3, "wrist_extension_px": 0, "background_fill": "gray"},
+  "model": {"base_model_id": "runwayml/stable-diffusion-v1-5", "controlnet_model_id": null},
+  "inference": {"steps": 30, "guidance_scale": 5.0, "controlnet_scale": 1.0}
+}
