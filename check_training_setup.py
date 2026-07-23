@@ -8,6 +8,8 @@ import json
 import sys
 from pathlib import Path
 
+from hand_restoration.data_config import resolve_clip_splits
+
 
 REQUIRED_IMPORTS = {
     "accelerate": "accelerate",
@@ -65,7 +67,14 @@ def main() -> int:
         fail("HOT3D submodule is absent; run git submodule update --init --recursive", failures)
 
     data_config = config["data"]
-    for clip in data_config["clip_tars"]:
+    try:
+        train_clips, val_clips, split_path = resolve_clip_splits(config, root)
+    except (KeyError, ValueError, FileNotFoundError, json.JSONDecodeError) as exc:
+        fail(f"Invalid data split configuration: {exc}", failures)
+        train_clips, val_clips, split_path = [], [], None
+    if split_path is not None:
+        print(f"[OK] clip split: {split_path}")
+    for clip in train_clips + val_clips:
         clip_path = (root / clip).resolve()
         if clip_path.is_file():
             print(f"[OK] HOT3D clip: {clip_path}")

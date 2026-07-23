@@ -121,3 +121,32 @@ Preprocessing can run on CPU, but SD 1.5 training and multi-checkpoint
 comparison should use a CUDA-enabled PyTorch installation. The GUI reports
 progress checkpoint by checkpoint and keeps the same random seed for fair
 visual comparison.
+
+## Formal 20-clip training
+
+The formal dataset uses `clip-000000` through `clip-000019` from HOT3D-Clips `train_quest3`. The committed seed-7 manifest keeps clips 000000--000015 in training and clips 000016--000019 in holdout; a clip name appearing in both sets is rejected before any model is loaded. The legacy `data.clip_tars` setting remains supported for tiny-overfit and inference.
+
+Place the original, unextracted archives at `data/train_quest3/clip-NNNNNN.tar`. Download and validate all missing archives with the official HOT3D-Clips Hugging Face repository only after the required access asset is available:
+
+```bash
+conda activate glove-hot3d
+python prepare_hot3d_clips.py --download
+```
+
+The validator opens every tar, checks the right-camera image and camera metadata, counts total frames, right-MANO frames, and final samples, and writes those statistics into `configs/hand_restoration/splits/clips_000000_000019_seed7.json`. Missing or annotation-poor clips are reported explicitly. Data, download manifests, MANO assets, caches, outputs, and checkpoints remain ignored by Git.
+
+Validate both sides of the split before training:
+
+```bash
+python smoke_test_hand_restoration.py --config configs/hand_restoration/train_clips000000_000019.json --split train
+python smoke_test_hand_restoration.py --config configs/hand_restoration/train_clips000000_000019.json --split validation
+accelerate launch --num_processes 1 train_hand_restorer.py --config configs/hand_restoration/train_clips000000_000019_smoke.json
+```
+
+After the isolated smoke run passes, start the formal run with:
+
+```bash
+accelerate launch --num_processes 1 train_hand_restorer.py --config configs/hand_restoration/train_clips000000_000019.json
+```
+
+The formal configuration trains for ten dataset epochs. At the documented 150 frames per clip and complete right-hand availability, that is 2,400 train samples, 600 optimizer steps per epoch with batch size 1 and four-way gradient accumulation, and 6,000 optimizer steps total. The trainer derives the actual total from the indexed sample count, runs fixed-order, fixed-seed validation exactly once per indexed epoch, and records configuration, split, Git commit, GPU, dependency versions, losses, steps, samples seen, and timing in the experiment directory. Resume remains available with `--resume PATH_TO_CHECKPOINT`.

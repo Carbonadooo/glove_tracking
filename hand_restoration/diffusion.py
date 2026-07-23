@@ -69,7 +69,12 @@ class ControlNetHandRestorer(torch.nn.Module):
         ).input_ids.to(self.device_name)
         return self.text_encoder(tokens)[0]
 
-    def training_loss(self, target_rgb: torch.Tensor, condition_rgb: torch.Tensor) -> torch.Tensor:
+    def training_loss(
+        self,
+        target_rgb: torch.Tensor,
+        condition_rgb: torch.Tensor,
+        generator: torch.Generator | None = None,
+    ) -> torch.Tensor:
         """Standard latent diffusion epsilon-prediction objective.
 
         Both inputs must be Bx3xHxW float images in [-1, 1].
@@ -77,10 +82,13 @@ class ControlNetHandRestorer(torch.nn.Module):
         target_rgb = target_rgb.to(self.device_name)
         condition_rgb = condition_rgb.to(self.device_name)
         with torch.no_grad():
-            latents = self.vae.encode(target_rgb).latent_dist.sample() * self.vae.config.scaling_factor
+            latents = self.vae.encode(target_rgb).latent_dist.sample(generator=generator) * self.vae.config.scaling_factor
             text = self.text_embeddings(target_rgb.shape[0])
-        noise = torch.randn_like(latents)
-        timesteps = torch.randint(0, self.noise_scheduler.config.num_train_timesteps, (latents.shape[0],), device=latents.device, dtype=torch.long)
+        noise = torch.randn(latents.shape, generator=generator, device=latents.device, dtype=latents.dtype)
+        timesteps = torch.randint(
+            0, self.noise_scheduler.config.num_train_timesteps, (latents.shape[0],),
+            generator=generator, device=latents.device, dtype=torch.long,
+        )
         noisy = self.noise_scheduler.add_noise(latents, noise, timesteps)
         down, mid = self.controlnet(
             noisy,

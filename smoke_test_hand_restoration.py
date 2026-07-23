@@ -12,6 +12,7 @@ import torch
 
 from hand_restoration.conditions import ConditionConfig
 from hand_restoration.config import load_json_config
+from hand_restoration.data_config import resolve_clip_splits
 from hand_restoration.hot3d_dataset import Hot3DSingleFrameDataset
 from hand_restoration.visualize import save_debug_grid
 
@@ -21,17 +22,22 @@ def main() -> None:
     parser.add_argument("--config", type=Path, default=Path("configs/hand_restoration/tiny_overfit.json"))
     parser.add_argument("--diffusion", action="store_true", help="Also load SD/ControlNet and test a training loss + checkpoint reload.")
     parser.add_argument("--inference", action="store_true", help="Also run one low-step pretrained ControlNet inference call.")
+    parser.add_argument("--split", choices=("train", "validation"), default="train")
     args = parser.parse_args()
     config = load_json_config(args.config)
     data = config["data"]
-    dataset = Hot3DSingleFrameDataset(clip_tars=data["clip_tars"], mano_model_dir=data["mano_model_dir"], camera_id=data.get("camera_id", "1201-2"), hands=data.get("hands", "right"), output_size=data.get("output_size", 512), grayscale=data.get("grayscale", True), frame_start=data.get("frame_start", 0), max_frames_per_clip=1, condition=ConditionConfig(**config.get("condition", {})))
+    train_clips, val_clips, _ = resolve_clip_splits(config, Path(__file__).resolve().parent)
+    clip_tars = train_clips if args.split == "train" else val_clips
+    if not clip_tars:
+        raise ValueError(f"No {args.split} clips configured.")
+    dataset = Hot3DSingleFrameDataset(clip_tars=clip_tars, mano_model_dir=data["mano_model_dir"], camera_id=data.get("camera_id", "1201-2"), hands=data.get("hands", "right"), output_size=data.get("output_size", 512), grayscale=data.get("grayscale", True), frame_start=data.get("frame_start", 0), max_frames_per_clip=1, condition=ConditionConfig(**config.get("condition", {})))
     sample = dataset[0]
     assert sample["target_rgb"].shape == sample["condition_rgb"].shape == sample["mano_rgb"].shape
     assert sample["target_rgb"].shape[0] == 3 and sample["mano_mask"].shape[0] == sample["edit_mask"].shape[0] == 1
     assert torch.all(sample["target_rgb"] <= 1) and torch.all(sample["target_rgb"] >= -1)
     assert torch.all(sample["mano_mask"] >= 0) and torch.all(sample["mano_mask"] <= 1)
     output = Path("outputs/hand_restoration/smoke")
-    save_debug_grid(sample, output / "preprocess.png")
+    save_debug_grid(sample, output / ("preprocess.png" if args.split == "train" else "preprocess_validation.png"))
     print("PASS preprocessing: sample, aligned MANO render, condition, masks, shapes, and ranges.")
     if not args.diffusion:
         return
